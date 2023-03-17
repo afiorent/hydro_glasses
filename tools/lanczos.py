@@ -6,14 +6,14 @@ import opt_einsum as oe
 
 def continued_fraction(a_coefficients, b_coefficients):
     """
-    Calcola il valore di una frazione continua data la lista dei suoi coefficienti a e b.
+    Compute the value of a continued fraction from the lists of coefficients `a` and `b`
     
     Args:
-    a_coefficients: lista dei coefficienti a della frazione continua
-    b_coefficients: lista dei coefficienti b della frazione continua
+    a_coefficients: list of coefficients `a`
+    b_coefficients: list of coefficients `b`
     
     Returns:
-    Il valore della frazione continua
+    The value of the continued fraction
     """
     n = len(a_coefficients)
     if n == 0:
@@ -27,24 +27,24 @@ def continued_fraction(a_coefficients, b_coefficients):
 
 def lanczos_cheap(A, v, k):
     """
-    Implementazione dell'algoritmo di Lanczos per una matrice simmetrica A e un vettore iniziale v.
+    Lanczos algorithm for a symmetric matrix `A` and an initial vector `v`
     
     Args:
-    A: matrice simmetrica di dimensione n x n
-    v: vettore di dimensione n x 1
-    k: numero di iterazioni
+    A: n * n (float) Symmetric matrix
+    v: n * 1 (float) vector
+    k: (int) number of iterations
     
     Returns:
     alpha array, beta array
     """
     n = A.shape[0]
     #T = np.zeros((k, k))
-    alpha_array=np.zeros(k)
-    beta_array=np.zeros(k)
+    alpha_array = np.zeros(k)
+    beta_array = np.zeros(k)
     v = v / np.linalg.norm(v)
-    v_minus=np.zeros_like(v,dtype=complex)
+    v_minus = np.zeros_like(v, dtype = complex)
     for j in range(k):
-        w = np.matmul(A, v,dtype=complex)
+        w = np.matmul(A, v, dtype = complex)
         alpha = np.vdot(v, w)
         if j == k-1:
             break
@@ -53,8 +53,8 @@ def lanczos_cheap(A, v, k):
         #print(beta)
         if beta == 0:
             break
-        v_minus=v
-        v=w / beta
+        v_minus = v
+        v = w / beta
         alpha_array[j] = alpha
         beta_array[j] = beta
 

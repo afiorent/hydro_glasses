@@ -2,25 +2,25 @@ import numpy as np
 import matplotlib.pyplot as plt
 def lanczos(A,u_in,nsteps):
     '''
-    Algoritmo di Lanczos per matrice simmetrica e reale e un vettore di input
+    Lanczos algorithm for a symmetric matrix `A` and an initial vector `v`
     
     Args:
-    A: matrice di cui trovare gli autovalori
-    u_in: vettore di input
-    nsteps: numero di step per l'algoritmo
+    A: n*n matrix
+    u_in: n*1 input vector
+    nsteps: number of iterations
     
     Return:
-    T: matrice tridiagonale 
-    U: matrice unitaria tale per cui U.T@A@U == T a meno di errore numerico
+    T: n*n Tridiagonal matrix
+    U: n*n Unitary matrix such that U.T@A@U == T 
     '''
     if A.shape[0]==A.shape[1]:
         if u_in.shape[0]==A.shape[0]:
             pass
         else: 
             print(u_in.shape,A.shape[0])
-            raise ValueError('il vettore e la matrice non hanno dimensioni compatibili')
+            raise ValueError('Incompatible matrix and vector shapes')
     else:
-        raise ValueError('A non è quadrata!')
+        raise ValueError('A must be a square matrix')
     dimA=A.shape[0]
     U=np.zeros((dimA, nsteps))
     T=np.zeros((nsteps,nsteps))
@@ -41,16 +41,16 @@ def lanczos(A,u_in,nsteps):
 
 def compute_spectrum(A, u, nsteps, fmin=-20, fmax=20, nfreq=1000, eta=1.0e-3, plot=False):
     '''
-    Calcola lo spettro in frequenza di 1/(z-A) calcolato su un vettore di input u_in
+    Compute the frequency spectrum of 1/(z-A) on a vector input `u_in`
     '''
-    T, U=lanczos(A, u, nsteps=nsteps)
-    freq=np.linspace(fmin,fmax,nfreq) - 1j*eta*np.ones(nfreq)
+    T, U = lanczos(A, u, nsteps=nsteps)
+    freq = np.linspace(fmin, fmax, nfreq) - 1j*eta*np.ones(nfreq)
     sp=((U.T@u)[ :]@np.linalg.inv(freq[:,np.newaxis, np.newaxis]*np.identity(nsteps)-T[:,:]))[:,0]
     if plot:
-        f=plt.figure()
-        plt.plot(np.real(freq), np.imag(sp), label='imaginary part')
-        plt.legend()
-        f=plt.figure()
-        plt.plot(np.real(freq), np.real(sp), label='real part')
-        plt.legend()
+        fig, ax = plt.subplots()
+        ax.plot(np.real(freq), np.imag(sp), label = 'Im')
+        ax.legend()
+        fig, ax = plt.subplots()
+        ax.plot(np.real(freq), np.real(sp), label = 'Re')
+        ax.legend()
     return np.real(freq), sp
