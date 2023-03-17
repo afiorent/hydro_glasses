@@ -39,7 +39,7 @@ def lanczos(A,u_in,nsteps):
         T[i,i-1]=beta
     return T, U
 
-def compute_spectrum(A, u_in, nsteps, fmin=-20, fmax=20, nfreq=1000, eta=1.0e-3, plot=False):
+def compute_spectrum(A, u, nsteps, fmin=-20, fmax=20, nfreq=1000, eta=1.0e-3, plot=False):
     '''
     Calcola lo spettro in frequenza di 1/(z-A) calcolato su un vettore di input u_in
     '''
