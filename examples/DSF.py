@@ -11,7 +11,7 @@ from hydro_glasses import amorphous_tools as at
 
 
 
-root='N4/'
+root='N10/'
 
 
 
@@ -34,20 +34,23 @@ print(reciprocal_cell)
 ket_Q_L,ket_Q_T=at.compute_phi_Q(Q_list,reciprocal_cell,pos)
 
 
-# In[14]:
 
 ket_Q_T=ket_Q_T.reshape([3*atoms.get_global_number_of_atoms(),Q_list.shape[0] ])
+Q_array=np.array([2*np.pi*np.matmul(reciprocal_cell, Q_) for Q_ in Q_list])
+
+
 
 eta=1
-y_list=[]
-for iq in range(Q_list.shape[0]):
+spectrum={}
+omega_array=np.linspace(0.1,120,10000)
+spectrum['omega']=omega_array
+spectrum['Q']=Q_array
+for iq,Q in enumerate(Q_list):
     phi=ket_Q_T[:,iq]
-    omega_array=np.linspace(5,120,10000)
     #y=np.zeros_like(omega_array,dtype=complex)
     x,y=lanczos.spectrum(A=dynmat, v=phi, k=100,omega_array=omega_array,eta=eta)
-    y_list.append(y)
-y_list=np.array(y_list)
-np.savetxt(root+'spectrum.npy',y_list)
+    spectrum[iq]=y
+np.save(root+'spectrum.npy',spectrum)
 
 
 
