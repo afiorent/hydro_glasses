@@ -125,7 +125,7 @@ def spectrum(A, v, k,omega_array,eta):
     b2=compute_b2(beta)
     y=np.zeros_like(omega_array,dtype=complex)
     for i,omega in enumerate(omega_array):
-        z2=omega**2+1j*eta
+        z2=(omega+1j*eta)**2
         y[i]=continued_fraction(np.insert(z2-alpha,0,0),b2)
     return omega_array, np.abs(np.imag(y))
 

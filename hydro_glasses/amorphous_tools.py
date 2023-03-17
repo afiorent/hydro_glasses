@@ -5,6 +5,32 @@ import opt_einsum as oe
 
 if __name__ == '__main__':
     pass
+def compute_phi_Q(Q_list, reciprocal_cell, pos):
+    """
+    Compute the pseudo-plane-wave states with wavevectors in Q_list
+
+            Parameters:
+                Q_list (int): list of triplets of integers that correspond to the Q-points in reciprocal space.
+                positions (float): list of positions of the atoms
+                reciprocal_cell (float): 3x3 matrix with the reciprocal cell 
+
+            Returns:
+               a list of vectors
+    """
+    Q = np.array([2*np.pi*np.matmul(reciprocal_cell, Q_) for Q_ in Q_list])
+    Qn = oe.contract('qa,q->qa', Q, 1/np.linalg.norm(Q, axis = 1))
+    #Qn = np.einsum('qa,q->qa', Q, 1/np.linalg.norm(Q, axis = 1))
+    
+    eperp = np.random.rand(*Q.shape)
+    eperp -= np.array([Q_*eperp_.dot(Q_) for eperp_, Q_ in zip(eperp, Qn)])
+    eperp = oe.contract('qa,q->qa', eperp, 1/np.linalg.norm(eperp, axis = 1))
+    print(Q.shape,pos.shape)
+    exp_i_Q_dot_R = np.exp(1j*np.transpose(Q@pos, axes = (0, 2,1)))
+    
+    
+    exp_i_Q_dot_R_L=oe.contract('qa,Iq->Iaq',Qn,exp_i_Q_dot_R[0,:,:])
+    exp_i_Q_dot_R_T=oe.contract('qa,Iq->Iaq',eperp,exp_i_Q_dot_R[0,:,:])
+    return exp_i_Q_dot_R_L,exp_i_Q_dot_R_T
 
 def compute_Q_dot_product(Q_list, positions, reciprocal_cell):
     """
