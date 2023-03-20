@@ -8,10 +8,10 @@ from ase.io import read,write
 from ase import units
 from hydro_glasses import lanczos,test_lanczos
 from hydro_glasses import amorphous_tools as at
+import tensorflow as tf
+import logging
 
-
-
-root='N10/'
+root='N12/'
 
 
 
@@ -20,7 +20,8 @@ dynmat=dynmat[0,:,:,0,:,:]/28.085 * units.mol / (10 * units.J)
 
 n_modes=dynmat.shape[0]*dynmat.shape[1]
 dynmat=dynmat.reshape([n_modes,n_modes])
-
+dynmat=(dynmat+dynmat.T)/2
+dynmat_tf = tf.sparse.from_dense(np.complex128(dynmat) )
 
 Q_list = np.array(list(set(tuple(sorted(l)) for l in [[i, j, k] for i in range(12) for j in range(12) for k in range(12)])))
 Q_list = np.delete(Q_list, np.argwhere((Q_list == [0, 0, 0]).all(axis = 1)), axis = 0)
@@ -46,9 +47,11 @@ omega_array=np.linspace(0.1,120,10000)
 spectrum['omega']=omega_array
 spectrum['Q']=Q_array
 for iq,Q in enumerate(Q_list):
-    phi=ket_Q_T[:,iq]
-    #y=np.zeros_like(omega_array,dtype=complex)
-    x,y=lanczos.spectrum(A=dynmat, v=phi, k=100,omega_array=omega_array,eta=eta)
+    logging.warning(iq)
+    #phi=ket_Q_T[:,iq]
+    phi=ket_Q_T[:,iq][np.newaxis].T
+    phi_tf= tf.convert_to_tensor(phi,dtype=tf.complex128)
+    x,y=lanczos.spectrum(A=dynmat_tf, v=phi_tf, k=100,omega_array=omega_array,eta=eta,is_tf=True)
     spectrum[iq]=y
 np.save(root+'spectrum.npy',spectrum)
 
