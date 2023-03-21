@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy import sparse
 def lanczos(A,u_in,nsteps):
     '''
     Lanczos algorithm for a symmetric matrix `A` and an initial vector `v`
@@ -41,16 +42,39 @@ def lanczos(A,u_in,nsteps):
 
 def compute_spectrum(A, u, nsteps, fmin=-20, fmax=20, nfreq=1000, eta=1.0e-3, plot=False):
     '''
+    DEPRECATED: it consumes too much memory and scales poorly with the number of frequencies. 
+    Use the computation with the continued fraction.
     Compute the frequency spectrum of 1/(z-A) on a vector input `u_in`
     '''
     T, U = lanczos(A, u, nsteps=nsteps)
-    freq = np.linspace(fmin, fmax, nfreq) - 1j*eta*np.ones(nfreq)
+    f = np.linspace(fmin, fmax, nfreq)
+    freq = (f - 1j*eta*np.ones(nfreq))**2
     sp=((U.T@u)[ :]@np.linalg.inv(freq[:,np.newaxis, np.newaxis]*np.identity(nsteps)-T[:,:]))[:,0]
     if plot:
         fig, ax = plt.subplots()
-        ax.plot(np.real(freq), np.imag(sp), label = 'Im')
+        ax.plot(f, np.imag(sp), label = 'Im')
         ax.legend()
         fig, ax = plt.subplots()
-        ax.plot(np.real(freq), np.real(sp), label = 'Re')
+        ax.plot(f, np.real(sp), label = 'Re')
         ax.legend()
-    return np.real(freq), sp
+    return f, sp
+
+def compute_spectrum_sparse(A, u, nsteps, fmin=-10, fmax=10, nfreq=200, eta=1.0e-3, plot=False):
+    '''
+    Compute the frequency spectrum of 1/(z-A) on a vector input `u`
+    '''
+    T, u_u = lanczos(A, u, nsteps=nsteps)
+    f = np.linspace(fmin, fmax, nfreq)
+    freq2 = (f - 1j*eta*np.ones(nfreq))**2
+    T=sparse.csc_matrix(T)
+    sp=np.zeros(nfreq, dtype=np.complex_)
+    for i in range(nfreq):
+        sp[i]=((u_u)[:]@inv((freq2[i]) * (sparse.identity(nsteps)).tocsc()-Ts[:,:]))[0]
+    if plot:
+        fig, ax = plt.subplots()
+        ax.plot(f, np.abs(np.imag(sp)), label = 'Im')
+        ax.legend()
+        fig, ax = plt.subplots()
+        ax.plot(f, np.real(sp), label = 'Re')
+        ax.legend()
+    return f, sp
