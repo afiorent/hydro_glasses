@@ -45,8 +45,8 @@ def lanczos_cheap(A, v, k):
     v = v / np.linalg.norm(v)
     v_minus=np.zeros_like(v,dtype=complex)
     for j in range(k):
-        w = np.matmul(A, v,dtype=complex)
-        alpha = np.vdot(v, w)
+        w =A@v # np.matmul(A, v,dtype=complex)
+        alpha = np.real( np.vdot(v, w) ) 
         if j == k-1:
             break
         w = w - alpha * v - (beta * v_minus if j > 0 else 0)
