@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import tensorflow as tf
 #from ase.io import read,write
 import opt_einsum as oe
 #from scipy.optimize import curve_fit
@@ -23,15 +24,6 @@ def continued_fraction(a_coefficients, b_coefficients):
     else:
         return a_coefficients[0] + b_coefficients[0] / continued_fraction(a_coefficients[1:], b_coefficients[1:])
 
-
-
-def recompute_spectrum(alpha,beta,z):
-    b2=compute_b2(beta)
-    y=np.zeros(len(z),dtype=complex)
-    z2=z**2
-    for i,z2_ in enumerate(z2):
-        y[i]=continued_fraction(np.insert(z2_-alpha,0,0),b2)
-    return np.abs(np.imag(y))
 
 
 def lanczos_cheap(A, v, k):
@@ -69,6 +61,38 @@ def lanczos_cheap(A, v, k):
 
     return alpha_array, beta_array#T, Q
 
+def lanczos_sparse_complex(A, v, k):
+    """
+    Esegue il metodo di Lanczos per trovare una base ortonormale per lo spazio di Krylov generato da v.
+
+    Args:
+    A: matrice quadrata sparsa e reale/simmetrica rappresentata come un oggetto tf.sparse.SparseTensor
+    v: vettore complesso di dimensione n rappresentato come un oggetto tf.Tensor
+    k: numero di vettori di base da calcolare (deve essere <= n-1)
+
+    Returns:
+    V: matrice di dimensione n x k contenente le k basi ortonormali calcolate
+    T: matrice tridiagonale di dimensione k x k contenente le informazioni di ortogonalizzazione
+    """
+    n = v.shape[0]
+    alpha_array=np.zeros(k,dtype=complex)
+    beta_array=np.zeros(k,dtype=complex)
+    beta = tf.constant(0, dtype=tf.complex128)
+    v = v / tf.norm(v)
+    v_minus=tf.zeros_like(v)
+    for j in range(k):
+        w = tf.sparse.sparse_dense_matmul(A,v  )
+
+        alpha = np.real(tf.math.reduce_sum(tf.math.conj(v) * w))
+        w = w - alpha * v - beta * tf.cast(v_minus, dtype=tf.complex128)
+        beta = tf.norm(w)
+        if beta == 0:
+            break
+        v_minus=v
+        v=w / beta
+        alpha_array[j] = alpha
+        beta_array[j] = beta
+    return alpha_array,beta_array
 
 def lanczos(A, v, k):
     """
@@ -110,11 +134,11 @@ def lanczos(A, v, k):
     #return T,Q
 def compute_b2(beta):
     b2=np.zeros(len(beta)+1,dtype=complex)
-    b2[0]=1
+    b2[0]=1+0*1j
     b2[1:]=-beta**2
     return b2
 
-def spectrum(A, v, k,omega_array,eta,return_chain=False):
+def spectrum(A, v, k,omega_array,eta,is_tf=False):
     """
     Compute spectrum using lanczos method
 
@@ -129,14 +153,14 @@ def spectrum(A, v, k,omega_array,eta,return_chain=False):
     Returns:
     omega_array, spectrum
     """
-    alpha,beta=lanczos_cheap(A,v,k)
+    if not is_tf:
+        alpha,beta=lanczos_cheap(A,v,k)
+    else:
+        alpha,beta=lanczos_sparse_complex(A,v,k)
     b2=compute_b2(beta)
     y=np.zeros_like(omega_array,dtype=complex)
     for i,omega in enumerate(omega_array):
         z2=(omega+1j*eta)**2
         y[i]=continued_fraction(np.insert(z2-alpha,0,0),b2)
-    if not return_chain:
-        return np.abs(np.imag(y))
-    else:
-        return np.abs(np.imag(y)),alpha,beta
+    return omega_array, np.abs(np.imag(y))
 
