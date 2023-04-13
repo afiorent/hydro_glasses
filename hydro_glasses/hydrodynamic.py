@@ -99,16 +99,23 @@ def plot_spectrum_vs_frequency(spectrum, qmax = 1, units = 'THz', is_integral = 
     fig.tight_layout()
     return fig, axes
 
-def compute_disorder_widths(spectrum, qmax = 1, qmax_c = 0.4, fit_func = 'lorentzian'):
+def compute_disorder_widths(spectrum, qmax = 1, qmax_c = 0.4, fit_func = 'DHO', eta = 0):
     from scipy.optimize import curve_fit
     def lorentzian(w, w0, gamma, norm):
         return norm*(gamma/(gamma**2 + (w-w0)**2))
     def gaussian(w, w0, sigma, norm):
         return norm*np.exp(-(w-w0)**2/2/sigma**2)
+    def DHO(w, w0, gamma, norm, eta = eta):
+        num = norm*np.pi*(2*G+eta)*w0
+        den = (w**2 - w0**2 - 0.5*(G + eta)**2)**2 + w**2*(2*G + eta)**2
+        return num/den
+
     if fit_func.lower() == 'lorentzian':
         func = lorentzian
     elif fit_func.lower() == 'gaussian':
         func = gaussian
+    elif fit_func.lower() == 'dho':
+        func = lambda w, w0, gamma, norm: DHO(w, w0, gamma, norm, eta = eta)
     else:
         raise ValueError('Fitting function should be either lorentzian or gaussian')
     
@@ -129,16 +136,16 @@ def compute_disorder_widths(spectrum, qmax = 1, qmax_c = 0.4, fit_func = 'lorent
         freq[branch] = []
         
         for i in range(len(q[q<qmax])):
-            #try:
+            try:
                 popt, pcov = curve_fit(func, w, S[branch][i].mean(axis = 1))
                 q_for_fit[branch].append(q[i])
                 freq[branch].append([popt[0], pcov[0,0]])
                 width[branch].append(popt[1])
                 width_std[branch].append(np.sqrt(pcov[1,1]))
                 
-            #except:
-            #    print(i, end = ' ')
-            #    continue
+            except:
+                print(i, end = ' ')
+                continue
         
         q_for_fit[branch] = np.array(q_for_fit[branch])
         width[branch] = np.array(width[branch])
@@ -153,7 +160,8 @@ def compute_disorder_widths(spectrum, qmax = 1, qmax_c = 0.4, fit_func = 'lorent
     return {'q': q_for_fit, 
             'Gamma': width,
             'Gamma_std': width_std,
-            'omega': freq, 'c_sound': c_sound}
+            'omega': freq, 
+            'c_sound': c_sound}
 
 
 def fit_disorder_widths(fit_dict, qmax = 0.5, power = 2, eta = 0):
