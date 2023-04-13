@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 #from ase.io import read,write
 import opt_einsum as oe
 #from scipy.optimize import curve_fit
-
+import logging
 def continued_fraction(a_coefficients, b_coefficients):
     """
     Calcola il valore di una frazione continua data la lista dei suoi coefficienti a e b.
@@ -25,10 +25,10 @@ def continued_fraction(a_coefficients, b_coefficients):
 
 
 
-def recompute_spectrum(alpha,beta,z):
+def recompute_spectrum(alpha,beta,z2):
     b2=compute_b2(beta)
-    y=np.zeros(len(z),dtype=complex)
-    z2=z**2
+    y=np.zeros(len(z2),dtype=complex)
+    #z2=z**2
     for i,z2_ in enumerate(z2):
         y[i]=continued_fraction(np.insert(z2_-alpha,0,0),b2)
     return np.abs(np.imag(y))
@@ -68,7 +68,53 @@ def lanczos_cheap(A, v, k):
         beta_array[j] = beta
 
     return alpha_array, beta_array#T, Q
-
+def lanczos_ortho(A,u_in,nsteps):
+    '''
+    Lanczos algorithm for a symmetric matrix `A` and an initial vector `v`
+    
+    Args:
+    A: n*n matrix
+    u_in: n*1 input vector
+    nsteps: number of iterations
+    
+    Return:
+    T: n*n Tridiagonal matrix
+    U: n*n Unitary matrix such that U.T@A@U == T 
+    '''
+    if A.shape[0]==A.shape[1]:
+        if u_in.shape[0]==A.shape[0]:
+            pass
+        else: 
+            print(u_in.shape,A.shape[0])
+            raise ValueError('Incompatible matrix and vector shapes')
+    else:
+        raise ValueError('A must be a square matrix')
+    dimA=A.shape[0]
+    U=np.zeros((dimA, nsteps),dtype=complex)
+    T=np.zeros((nsteps,nsteps))
+    
+    U[:,0]=u_in/np.linalg.norm(u_in)
+    alpha=np.real(U[:,0].conj()@(A@U[:,0]) )
+    T[0,0]=alpha
+    W=A@U[:,0]-alpha*U[:,0]
+    for i in range(1,nsteps):
+        beta=np.linalg.norm(W)
+        #modifica enri
+        W=W/beta
+        W=W-U@(U.transpose().conjugate()@W)
+        U[:,i]=W
+        #fine modifica
+        alpha=np.real(U[:,i].conj()@ A@U[:,i] )
+        W=A@U[:,i] - beta*U[:,i-1]- alpha*U[:,i]
+#        U[:,i]=W/beta
+#        alpha=np.real(U[:,i].conj()@ A@U[:,i] )
+#        W=A@U[:,i] - beta*U[:,i-1]
+#        #alpha=np.real(np.vdot(W,U[:,i]) )
+#        W=W-U@(U.transpose().conjugate()@W)
+        T[i,i]=alpha
+        T[i-1,i]=beta
+        T[i,i-1]=beta
+    return T, U
 
 def lanczos(A, v, k):
     """
@@ -114,7 +160,7 @@ def compute_b2(beta):
     b2[1:]=-beta**2
     return b2
 
-def spectrum(A, v, k,omega_array,eta,return_chain=False):
+def spectrum(A, v, k,omega_array,eta,return_chain=False,use_ortho=False,norm_A=1):
     """
     Compute spectrum using lanczos method
 
@@ -129,7 +175,17 @@ def spectrum(A, v, k,omega_array,eta,return_chain=False):
     Returns:
     omega_array, spectrum
     """
-    alpha,beta=lanczos_cheap(A,v,k)
+    if not use_ortho:
+        alpha,beta=lanczos_cheap(A,v,k)
+    else:
+        T, U=lanczos_ortho(A,v,nsteps=k)
+        alpha=np.diagonal(T)
+        beta=np.diagonal(T,offset=1)
+        beta=np.append(beta,0)
+        #logging.warning(alpha.shape)
+        #logging.warning(beta.shape)
+    alpha=alpha*norm_A
+    beta=beta*norm_A
     b2=compute_b2(beta)
     y=np.zeros_like(omega_array,dtype=complex)
     for i,omega in enumerate(omega_array):
