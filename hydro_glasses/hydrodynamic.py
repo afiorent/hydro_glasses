@@ -105,17 +105,21 @@ def compute_disorder_widths(spectrum, qmax = 1, qmax_c = 0.4, fit_func = 'DHO', 
         return norm*(gamma/(gamma**2 + (w-w0)**2))
     def gaussian(w, w0, sigma, norm):
         return norm*np.exp(-(w-w0)**2/2/sigma**2)
-    def DHO(w, w0, gamma, norm, eta = eta):
-        num = norm*np.pi*(2*G+eta)*w0
-        den = (w**2 - w0**2 - 0.5*(G + eta)**2)**2 + w**2*(2*G + eta)**2
-        return num/den
+    # TODO: uncomment the new DHO and remove the old one once the Lanczos alg. is updated
+    #def DHO(w, w0, gamma, norm, eta = eta):
+    #    num = norm*np.pi*(2*G+eta)*w0
+    #    den = (w**2 - w0**2 - 0.5*(G + eta)**2)**2 + w**2*(2*G + eta)**2
+    #    return num/den
+    def DHO(w, w0, tau, norm): # old version
+        return norm*(w*2*tau/((w*tau)**2 + (w**2-w0**2)**2))
 
     if fit_func.lower() == 'lorentzian':
         func = lorentzian
     elif fit_func.lower() == 'gaussian':
         func = gaussian
     elif fit_func.lower() == 'dho':
-        func = lambda w, w0, gamma, norm: DHO(w, w0, gamma, norm, eta = eta)
+        #func = lambda w, w0, gamma, norm: DHO(w, w0, gamma, norm, eta = eta) # TODO: for the new version
+        func = DHO  # TODO: old
     else:
         raise ValueError('Fitting function should be either lorentzian or gaussian')
     
