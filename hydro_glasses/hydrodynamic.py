@@ -7,7 +7,7 @@ from scipy.interpolate import InterpolatedUnivariateSpline,UnivariateSpline, pch
 from scipy.optimize import curve_fit
 import sys
 sys.path.append('/u/p/ppegolo/Software/scriptelli')
-from simple_bayesian_fit import *
+#from simple_bayesian_fit import *
 
 def plot_spectrum(spectrum, vmax = 10, N = None):
     q = spectrum['q']
