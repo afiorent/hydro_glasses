@@ -32,9 +32,7 @@ def recompute_spectrum(alpha,beta,z2):
     for i,z2_ in enumerate(z2):
         y[i]=continued_fraction(np.insert(z2_-alpha,0,0),b2)
     return np.abs(np.imag(y))
-
-
-def lanczos_cheap(A, v, k):
+def lanczos_cheap(A, v, k,last2=False):
     """
     Implementazione dell'algoritmo di Lanczos per una matrice simmetrica A e un vettore iniziale v.
     
@@ -45,6 +43,7 @@ def lanczos_cheap(A, v, k):
     
     Returns:
     alpha array, beta array
+    if last2=True it returns also the last two vectors
     """
     n = A.shape[0]
     #T = np.zeros((k, k))
@@ -66,8 +65,90 @@ def lanczos_cheap(A, v, k):
         v=w / beta
         alpha_array[j] = alpha
         beta_array[j] = beta
+    if not last2:
+        return alpha_array, beta_array
+    else:
+        return alpha_array, beta_array, v, v_minus
+def lanczos_restart(A, k,alpha_old, beta_old, v, v_minus,last2=False):
+    """
+    Implementazione dell'algoritmo di Lanczos per una matrice simmetrica A e un vettore iniziale v.
+    
+    Args:
+    A: matrice simmetrica di dimensione n x n
+    v: vettore di dimensione n x 1
+    k: numero di iterazioni
+    
+    Returns:
+    alpha array, beta array
+    if last2=True it returns also the last two vectors
+    """
+    n = A.shape[0]
+    #T = np.zeros((k, k))
+    alpha_old=alpha_old[:-1]
+    beta_old=beta_old[:-1]
+    k_old=len(alpha_old)
+    
+    alpha_array=np.zeros(k+k_old)
+    beta_array=np.zeros(k+k_old)
+    alpha_array[:k_old]=alpha_old
+    beta_array[:k_old]=beta_old
+    
+    v = v / np.linalg.norm(v)
+    beta=beta_old[-1]
+    for j in range(k_old,k_old+k):
+        w =A@v # np.matmul(A, v,dtype=complex)
+        alpha = np.real( np.vdot(v, w) ) 
+        if j == k_old+k-1:
+            break
+        w = w - alpha * v - (beta * v_minus if j > 0 else 0)
+        beta = np.linalg.norm(w)
+        #print(beta)
+        if beta == 0:
+            break
+        v_minus=v
+        v=w / beta
+        print(alpha,beta)
+        alpha_array[j] = alpha
+        beta_array[j] = beta
+    if not last2:
+        return alpha_array, beta_array
+    else:
+        return alpha_array, beta_array, v, v_minus
 
-    return alpha_array, beta_array#T, Q
+#def lanczos_cheap(A, v, k):
+#    """
+#    Implementazione dell'algoritmo di Lanczos per una matrice simmetrica A e un vettore iniziale v.
+#    
+#    Args:
+#    A: matrice simmetrica di dimensione n x n
+#    v: vettore di dimensione n x 1
+#    k: numero di iterazioni
+#    
+#    Returns:
+#    alpha array, beta array
+#    """
+#    n = A.shape[0]
+#    #T = np.zeros((k, k))
+#    alpha_array=np.zeros(k)
+#    beta_array=np.zeros(k)
+#    v = v / np.linalg.norm(v)
+#    v_minus=np.zeros_like(v,dtype=complex)
+#    for j in range(k):
+#        w =A@v # np.matmul(A, v,dtype=complex)
+#        alpha = np.real( np.vdot(v, w) ) 
+#        if j == k-1:
+#            break
+#        w = w - alpha * v - (beta * v_minus if j > 0 else 0)
+#        beta = np.linalg.norm(w)
+#        #print(beta)
+#        if beta == 0:
+#            break
+#        v_minus=v
+#        v=w / beta
+#        alpha_array[j] = alpha
+#        beta_array[j] = beta
+#
+#    return alpha_array, beta_array#T, Q
 def lanczos_ortho(A,u_in,nsteps):
     '''
     Lanczos algorithm for a symmetric matrix `A` and an initial vector `v`
@@ -196,3 +277,20 @@ def spectrum(A, v, k,omega_array,eta,return_chain=False,use_ortho=False,norm_A=1
     else:
         return np.abs(np.imag(y)),alpha,beta
 
+
+
+def convert_spectrum_lz2hydro(spectrum):
+    """
+    Convert the  spectrum computed through  lanczos method in a spectrum suitable for hydrodynamic tools
+    Args:
+    dictionary: spectrum
+    Return:
+    dictionary: spectrum
+    """
+    new_spectrum={}
+    new_spectrum['omega']=spectrum['omega']
+    new_spectrum['q']=np.linalg.norm(spectrum['Q'],axis=1 )
+    new_spectrum['S']={}
+    for ib,b in enumerate(['L','T']):
+        new_spectrum['S'][b]=np.array( [spectrum[i][b]['S'] for i in range( len(new_spectrum['q']) ) ] )[:,:,np.newaxis]
+    return new_spectrum
