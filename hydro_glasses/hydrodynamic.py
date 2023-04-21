@@ -141,7 +141,10 @@ def compute_disorder_widths(spectrum, qmax = 1, qmax_c = 0.4, fit_func = 'DHO', 
         
         for i in range(len(q[q<qmax])):
             try:
-                popt, pcov = curve_fit(func, w, S[branch][i].mean(axis = 1))
+                if len(S[branch][i].shape) == 3:
+                    popt, pcov = curve_fit(func, w, S[branch][i].mean(axis = 1))
+                else:
+                    popt, pcov = curve_fit(func, w, S[branch][i])
                 q_for_fit[branch].append(q[i])
                 freq[branch].append([popt[0], pcov[0,0]])
                 width[branch].append(popt[1])
