@@ -5,7 +5,9 @@ import opt_einsum as oe
 
 if __name__ == '__main__':
     pass
-def compute_phi_Q(Q_list, reciprocal_cell, pos,fix_eperp=None):
+
+
+def compute_phi_Q(Q_list, reciprocal_cell, pos,fix_eperp=None,cell_sym=False):
     """
     Compute the pseudo-plane-wave states with wavevectors in Q_list
 
@@ -20,19 +22,31 @@ def compute_phi_Q(Q_list, reciprocal_cell, pos,fix_eperp=None):
     Q = np.array([2*np.pi*np.matmul(reciprocal_cell, Q_) for Q_ in Q_list])
     Qn = oe.contract('qa,q->qa', Q, 1/np.linalg.norm(Q, axis = 1))
     #Qn = np.einsum('qa,q->qa', Q, 1/np.linalg.norm(Q, axis = 1))
-    if fix_eperp is None:
-        eperp = np.random.rand(*Q.shape)
-        eperp -= np.array([Q_*eperp_.dot(Q_) for eperp_, Q_ in zip(eperp, Qn)])
-    else:
-        eperp=fix_eperp*np.ones_like(Q_list)
+    if not cell_sym:
+        if fix_eperp is None:
+            eperp = np.random.rand(*Q.shape)
+            eperp -= np.array([Q_*eperp_.dot(Q_) for eperp_, Q_ in zip(eperp, Qn)])
+        else:
+            eperp=fix_eperp*np.ones_like(Q_list)
+    else: #the polarization are proportial to elements of the q-mesh
+        eT=np.array([1,0,0])
+        eT_2=np.array([0,1,0])
+        eT=2*np.pi*np.matmul(reciprocal_cell, eT)
+        eT/=np.linalg.norm(eT)
+        eT_2=2*np.pi*np.matmul(reciprocal_cell, eT_2)
+        eT_2/=np.linalg.norm(eT_2)
+        eperp=np.array([np.cross(Q_,eT) if np.linalg.norm(np.cross(Q_,eT))>1e-6 else np.cross(Q_,eT_2) for Q_ in Q_list ])
+        
     eperp = oe.contract('qa,q->qa', eperp, 1/np.linalg.norm(eperp, axis = 1))
     print(Q.shape,pos.shape)
+
     exp_i_Q_dot_R = np.exp(1j*np.transpose(Q@pos, axes = (0, 2,1)))
     
     
     exp_i_Q_dot_R_L=oe.contract('qa,Iq->Iaq',Qn,exp_i_Q_dot_R[0,:,:])
     exp_i_Q_dot_R_T=oe.contract('qa,Iq->Iaq',eperp,exp_i_Q_dot_R[0,:,:])
     return exp_i_Q_dot_R_L,exp_i_Q_dot_R_T
+
 
 def compute_Q_dot_product(Q_list, positions, reciprocal_cell):
     """
