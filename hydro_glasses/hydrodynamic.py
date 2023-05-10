@@ -720,3 +720,16 @@ def hydrodynamic_contribution(spectrum,
                                              'omega_max': {'T': omega_max_T, 'L': omega_max_L},
                                              'kappa_vs_omega_L': integrandL,
                                              'kappa_vs_omega_T': integrandT}
+
+def compute_hydro_integral(omega_T,omega_L,gamma_T,gamma_L,c_sound,T):
+    cT=c_sound['T']
+    cL=c_sound['L']
+    cvT = calculate_heat_capacity(omega_T, T)
+    cvL = calculate_heat_capacity(omega_L, T)
+    dos_T = dos_omega_T(omega_T, cT)
+    dos_L = dos_omega_L(omega_L, cL)
+    integrandT = 1e22*cT**2*cvT*dos_T/2/gamma_T/3
+    integrandL = 1e22*cL**2*cvL*dos_L/2/gamma_L/3
+    integT = trapezoid(integrandT, omega_T)
+    integL = trapezoid(integrandL, omega_L)
+    return integT,integL
