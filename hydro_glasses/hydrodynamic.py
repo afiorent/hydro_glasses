@@ -114,10 +114,12 @@ def compute_disorder_widths(spectrum, qmax = 1, qmax_c = 0.4, fit_func = 'DHO', 
         return norm*(w*2*tau/((w*tau)**2 + (w**2-w0**2)**2))
 
     if fit_func.lower() == 'lorentzian':
+        print('printing half FWHM as gamma, it differs from DHO')
         func = lorentzian
     elif fit_func.lower() == 'gaussian':
         func = gaussian
     elif fit_func.lower() == 'dho':
+        print('printing FWHM as gamma')
         #func = lambda w, w0, gamma, norm: DHO(w, w0, gamma, norm, eta = eta) # TODO: for the new version
         func = DHO  # TODO: old
     else:
