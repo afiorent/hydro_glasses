@@ -1,0 +1,15 @@
+cff-version: 1.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Fiorentino
+    given-names: Alfredo
+    orcid: https://orcid.org/0000-0002-3048-5534
+  - family-names: Pegolo
+    given-names: Paolo
+    orcid: https://orcid.org/0000-0003-1491-8229
+  - family-names: Drigo
+    given-names: Enrico
+    orcid: https://orcid.org/0000-0002-1797-2987
+title: "hydro_glasses"
+version: 0.1
+date-released: 2023-06-26
