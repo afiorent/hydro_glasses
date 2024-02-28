@@ -5,7 +5,7 @@ import matplotlib.cm
 try:
     from scipy.integrate import trapezoid
 except:
-    from scipy.integrate import trapz as trapezoid #perche' scipy e' stronzo e' ha cambiato il nome di questa funzione nelle ultime versioni 
+    from scipy.integrate import trapz as trapezoid #for some terrible reason scipy decided to change the name of this module in the latest versions 
 from scipy.interpolate import InterpolatedUnivariateSpline,UnivariateSpline, pchip_interpolate
 from scipy.optimize import curve_fit
 import sys
