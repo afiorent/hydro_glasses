@@ -2,7 +2,10 @@ import numpy as np
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.cm
-from scipy.integrate import trapezoid
+try:
+    from scipy.integrate import trapezoid
+except:
+    from scipy.integrate import trapz as trapezoid #for some terrible reason scipy decided to change the name of this module in the latest versions 
 from scipy.interpolate import InterpolatedUnivariateSpline,UnivariateSpline, pchip_interpolate
 from scipy.optimize import curve_fit
 import sys
