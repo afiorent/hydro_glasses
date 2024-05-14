@@ -1,0 +1,8 @@
+numpy 
+scipy
+opt_einsum
+more-itertools
+ase
+matplotlib
+#for speed up by multiprocessing
+multiprocess
