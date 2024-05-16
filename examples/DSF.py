@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import opt_einsum as oe
 import sys
-sys.path.append('/g100/home/userexternal/afiorent/hydro_glasses/')
+sys.path.append('/path/to/hydro_glasses/')
 from time import time
 from ase.io import read,write
 from ase import units

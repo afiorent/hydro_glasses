@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import opt_einsum as oe
 import sys
-sys.path.append('/g100/home/userexternal/afiorent/hydro_glasses/')
+sys.path.append('/path/to/hydro_glasses/')
 from time import time
 from ase.io import read,write
 from ase import units
@@ -32,7 +32,7 @@ S_qw_T={}
 omega_array=spectrum['omega']
 
 #recover the splines
-root_int='/g100_scratch/userexternal/ppegolo0/silicon/SIZE/quench_0_N3/interpolated/'
+root_int='/path/to/anharmonic/bandwidth_splines/'
 for T in [100,200,300,400,500]:
     spl=np.load(root_int+'spline.N3.T{}K.npy'.format(T),allow_pickle=True).item()
     eta_array=spl(omega_array/2/np.pi)
