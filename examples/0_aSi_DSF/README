@@ -1,0 +1,16 @@
+Example to generate the VDSF of MAC sample of size 10nm x 10nm and p=0.040.
+
+Inside the p_0.040 folder there are the LAMMPS input to compute the Dynamical Matrix. in.dyn starts from mine relaxed structure (mac-relaxed.init), while in.dyn_relax also performs the relaxation starting from your original configuration.
+
+Once the DM is ready, there are three step of post-processing:
+1) Save the DM as a sparse matrix. Save memory and speed up signifantly the next step.
+2) VDSF by Haydock's algorithm. 
+3)VDSF by direct diagonalization: 
+	3a. diagonalize the MD (only once of course)
+	3b. perform quickly the computation of the VDSF. It is just a spectral decomposition.
+Just for this size (~4000 atoms) step 2) could be slower than 3b. For larger size, 2) is way faster and computationally affordable. In any case this calculation should take few minutes.
+
+Run the post-processing with
+./run
+
+These steps require some python code. You can use the github repository hydro_glass that I attach. More examples in the Material Cloud of my last two papers (The NPJ Comp. Materials and the PRB). The required python packages are specified in the hydro_glass folder. Regarding python version, I use 3.10.11, but any fairly recent version (3.8-3.10) should be fine. 
