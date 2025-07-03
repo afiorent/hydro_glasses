@@ -1,16 +1,35 @@
-Example to generate the VDSF of MAC sample of size 10nm x 10nm and p=0.040.
+## Example 0: Vibrational Dynamical Structure Factor for Amorphous Silicon
 
-Inside the p_0.040 folder there are the LAMMPS input to compute the Dynamical Matrix. in.dyn starts from mine relaxed structure (mac-relaxed.init), while in.dyn_relax also performs the relaxation starting from your original configuration.
+This example demonstrates how to calculate the Vibrational Dynamical Structure Factor (VDSF) for amorphous Silicon. The calculation starts from the dynamical matrix (stored as a sparse matrix) and the atomic configuration.
 
-Once the DM is ready, there are three step of post-processing:
-1) Save the DM as a sparse matrix. Save memory and speed up signifantly the next step.
-2) VDSF by Haydock's algorithm. 
-3)VDSF by direct diagonalization: 
-	3a. diagonalize the MD (only once of course)
-	3b. perform quickly the computation of the VDSF. It is just a spectral decomposition.
-Just for this size (~4000 atoms) step 2) could be slower than 3b. For larger size, 2) is way faster and computationally affordable. In any case this calculation should take few minutes.
+### Calculation Methods
 
-Run the post-processing with
-./run
+1. **Direct Diagonalization**:
+   This method computes the eigenvalues and eigenvectors of the dynamical matrix directly. It is suitable for smaller systems where the computational cost is manageable. The eigenvalues and eigenvectors are then used to calculate the VDSF.
 
-These steps require some python code. You can use the github repository hydro_glass that I attach. More examples in the Material Cloud of my last two papers (The NPJ Comp. Materials and the PRB). The required python packages are specified in the hydro_glass folder. Regarding python version, I use 3.10.11, but any fairly recent version (3.8-3.10) should be fine. 
+2. **Lanczos Algorithm**:
+   An iterative method that leverages the sparsity of the dynamical matrix, making it more efficient for larger systems. This method also computes the VDSF.
+
+### Jupyter Notebook
+
+A Jupyter notebook, `plot_all.ipynb`, is provided to demonstrate and compare the two methods for calculating the VDSF.
+
+### Additional Tools
+
+A python script (lammps_dynmat2sparse.py) is provided to generate the sparse matrix from the dynamical matrix, which can be obtained using LAMMPS with `eskm` units.
+
+### Launch the calculations
+
+1. **Uncompress Input Data and Reference VDSF**:
+   Extract the input data and reference VDSF files:
+   ```bash
+   tar -zxvf data_N1728.tar.gz
+
+2. VDSF Through Direct Diagonalization: Run the following scripts to compute the VDSF:
+
+$ python3 diagonalize.py
+$ python3 direct_DSF.py
+
+3. VDSF Through Haydock-Lanczos Algorithm: This step is independent of the direct diagonalization step. Run the following script:
+
+$ python3 haydock_DSF.py
