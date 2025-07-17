@@ -1,5 +1,6 @@
 # Test temporary folders
 examples_local
+local_examples
 
 .DS_Store
 *.pyc
@@ -7,6 +8,7 @@ examples_local
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
+*__pycache__/
 *.py[cod]
 *$py.class
 
