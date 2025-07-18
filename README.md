@@ -1,6 +1,10 @@
-# hydro_glasses
+<p align="center">
+  <img src="./logo_hydro_glasses.png" alt="Hydro Glasses Logo" width="250"/>
+</p>
 
-hydro_glasses is a versatile Python toolkit for analyzing the lattice dynamics and hydrodynamic properties of glasses. 
+# Hydro Glasses
+
+Hydro Glasses is a versatile Python toolkit for analyzing the lattice dynamics and hydrodynamic properties of glasses. 
 It provides a suite of tools to compute (hydrodynamic) spectra, making it a Swiss Army knife for researchers and practitioners working with disordered materials.
 
 ## Installation
