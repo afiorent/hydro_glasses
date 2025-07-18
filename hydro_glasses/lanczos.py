@@ -6,14 +6,14 @@ import opt_einsum as oe
 import logging
 def continued_fraction(a_coefficients, b_coefficients):
     """
-    Calcola il valore di una frazione continua data la lista dei suoi coefficienti a e b.
-    
+    Computes the value of a continued fraction given lists of its a and b coefficients.
+
     Args:
-    a_coefficients: lista dei coefficienti a della frazione continua
-    b_coefficients: lista dei coefficienti b della frazione continua
-    
+        a_coefficients (list or ndarray): List of 'a' coefficients of the continued fraction.
+        b_coefficients (list or ndarray): List of 'b' coefficients of the continued fraction.
+
     Returns:
-    Il valore della frazione continua
+        float or complex: Value of the continued fraction.
     """
     n = len(a_coefficients)
     if n == 0:
@@ -25,13 +25,25 @@ def continued_fraction(a_coefficients, b_coefficients):
 
 
 
-def recompute_spectrum(alpha,beta,z2):
+def recompute_spectrum(alpha, beta, z2):
+    """
+    Recomputes the spectrum using the continued fraction method.
+
+    Args:
+        alpha (ndarray): Array of alpha coefficients from the Lanczos algorithm.
+        beta (ndarray): Array of beta coefficients from the Lanczos algorithm.
+        z2 (ndarray): Array of squared complex frequencies.
+
+    Returns:
+        ndarray: Imaginary part of the spectrum.
+    """
     b2=compute_b2(beta)
     y=np.zeros(len(z2),dtype=complex)
     #z2=z**2
     for i,z2_ in enumerate(z2):
         y[i]=continued_fraction(np.insert(z2_-alpha,0,0),b2)
     return np.abs(np.imag(y))
+
 def lanczos_cheap(A, v, k,last2=False):
     """
     Lanczos algorithm for a symmetric matrix A and an initial vector v.
