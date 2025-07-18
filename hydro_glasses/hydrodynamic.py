@@ -115,7 +115,7 @@ def compute_disorder_widths(spectrum, qmax = 1, qmax_c = 0.4, fit_func = 'DHO', 
     #    return num/den
     def DHO(w, w0, tau, norm): # old version
         return norm*(w*2*tau/((w*tau)**2 + (w**2-w0**2)**2))
-    print('printing half FWHM as gamma')
+    print('printing half FWHM as gamma.\n Note: previous versions of this function printed FWHM as gamma, if DHO was used. Unified convention now.')
     if fit_func.lower() == 'lorentzian':
         # print('printing half FWHM as gamma, it differs from DHO')
         func = lorentzian
