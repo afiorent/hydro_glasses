@@ -131,7 +131,17 @@ def compute_disorder_widths(spectrum, qmax = 1, qmax_c = 0.4, fit_func = 'DHO', 
     q = spectrum['q']
     w = spectrum['omega']
     S = spectrum['S']
-    
+
+    # Validate q array dimensions and content
+    if not isinstance(q, np.ndarray) or q.ndim != 1:
+        raise ValueError('spectrum["q"] should be a 1D numpy array with dimensions [Nq]')
+
+    if len(q) == 0:
+        raise ValueError('spectrum["q"] cannot be empty')
+
+    if not np.all(q >= 0):
+        raise ValueError('spectrum["q"] should contain non-negative wavevector norms')
+
     q_for_fit = {}
     freq = {}
     width = {}
