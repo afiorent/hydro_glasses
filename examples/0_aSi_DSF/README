@@ -1,0 +1,35 @@
+## Example 0: Vibrational Dynamical Structure Factor for Amorphous Silicon
+
+This example demonstrates how to calculate the Vibrational Dynamical Structure Factor (VDSF) for amorphous Silicon. The calculation starts from the dynamical matrix (stored as a sparse matrix) and the atomic configuration.
+
+### Calculation Methods
+
+1. **Direct Diagonalization**:
+   This method computes the eigenvalues and eigenvectors of the dynamical matrix directly. It is suitable for smaller systems where the computational cost is manageable. The eigenvalues and eigenvectors are then used to calculate the VDSF.
+
+2. **Lanczos Algorithm**:
+   An iterative method that leverages the sparsity of the dynamical matrix, making it more efficient for larger systems. This method also computes the VDSF.
+
+### Jupyter Notebook
+
+A Jupyter notebook, `plot_all.ipynb`, is provided to demonstrate and compare the two methods for calculating the VDSF.
+
+### Additional Tools
+
+A python script (lammps_dynmat2sparse.py) is provided to generate the sparse matrix from the dynamical matrix, which can be obtained using LAMMPS with `eskm` units.
+
+### Launch the calculations
+
+1. **Uncompress Input Data and Reference VDSF**:
+   Extract the input data and reference VDSF files:
+   ```bash
+   tar -zxvf data_N1728.tar.gz
+
+2. VDSF Through Direct Diagonalization: Run the following scripts to compute the VDSF:
+
+$ python3 0a_diagonalize.py
+$ python3 0b_direct_DSF.py
+
+3. VDSF Through Haydock-Lanczos Algorithm: This step is independent of the direct diagonalization step. Run the following script:
+
+$ python3 1_haydock_DSF.py

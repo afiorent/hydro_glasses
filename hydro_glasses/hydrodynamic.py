@@ -9,7 +9,7 @@ except:
 from scipy.interpolate import InterpolatedUnivariateSpline,UnivariateSpline, pchip_interpolate
 from scipy.optimize import curve_fit
 import sys
-sys.path.append('/u/p/ppegolo/Software/scriptelli')
+sys.path.append('/u/p/ppegolo/Software/scriptelli')###deprecated. TODO: remove this line and all there references to scriptelli
 #from simple_bayesian_fit import *
 
 def plot_spectrum(spectrum, vmax = 10, N = None):
@@ -115,14 +115,14 @@ def compute_disorder_widths(spectrum, qmax = 1, qmax_c = 0.4, fit_func = 'DHO', 
     #    return num/den
     def DHO(w, w0, tau, norm): # old version
         return norm*(w*2*tau/((w*tau)**2 + (w**2-w0**2)**2))
-
+    print('printing half FWHM as gamma.\n Note: previous versions of this function printed FWHM as gamma, if DHO was used. Unified convention now.')
     if fit_func.lower() == 'lorentzian':
-        print('printing half FWHM as gamma, it differs from DHO')
+        # print('printing half FWHM as gamma, it differs from DHO')
         func = lorentzian
     elif fit_func.lower() == 'gaussian':
         func = gaussian
     elif fit_func.lower() == 'dho':
-        print('printing FWHM as gamma')
+        # print('printing FWHM as gamma')
         #func = lambda w, w0, gamma, norm: DHO(w, w0, gamma, norm, eta = eta) # TODO: for the new version
         func = DHO  # TODO: old
     else:
@@ -131,7 +131,17 @@ def compute_disorder_widths(spectrum, qmax = 1, qmax_c = 0.4, fit_func = 'DHO', 
     q = spectrum['q']
     w = spectrum['omega']
     S = spectrum['S']
-    
+
+    # Validate q array dimensions and content
+    if not isinstance(q, np.ndarray) or q.ndim != 1:
+        raise ValueError('spectrum["q"] should be a 1D numpy array with dimensions [Nq]')
+
+    if len(q) == 0:
+        raise ValueError('spectrum["q"] cannot be empty')
+
+    if not np.all(q >= 0):
+        raise ValueError('spectrum["q"] should contain non-negative wavevector norms')
+
     q_for_fit = {}
     freq = {}
     width = {}
@@ -156,14 +166,20 @@ def compute_disorder_widths(spectrum, qmax = 1, qmax_c = 0.4, fit_func = 'DHO', 
                 width_std[branch].append(np.sqrt(pcov[1,1]))
                 
             except:
-                print(i, end = ' ')
+                print('failure dispersion fit for Q number ',i, end = ' \n')
                 continue
         
         q_for_fit[branch] = np.array(q_for_fit[branch])
-        width[branch] = np.array(width[branch])
-        width_std[branch] = np.array(width_std[branch])
+        if fit_func.lower() == 'dho':
+            # DHO fit returns FWHM as gamma, so we need to divide it by 2
+            width[branch] = np.array(width[branch])/2
+            width_std[branch] = np.array(width_std[branch])/2
+        else:
+            width[branch] = np.array(width[branch])
+            width_std[branch] = np.array(width_std[branch])
         freq[branch] = np.array(freq[branch])
-        
+        # print('freq branch shape and q_fit', freq[branch].shape, q_for_fit[branch].shape)
+        # print('freq branch used in fit', freq[branch][q_for_fit[branch]<=qmax_c, 0])
         popt, pcov = curve_fit(lambda k, c: c*k, q_for_fit[branch][q_for_fit[branch]<=qmax_c], 
                                freq[branch][q_for_fit[branch]<=qmax_c, 0],
                                sigma = freq[branch][q_for_fit[branch]<=qmax_c, 1])
@@ -326,7 +342,7 @@ def hydrodynamic_contribution(spectrum,
                               q_max = None, 
                               omega_max = None,
                               omega_min = 0,
-                              is_interpolate = False,
+                              is_interpolate ='spline',
                               harmonic_eta = None,
                               boundary_thickness = None,
                               anharmonic_gamma = None,
@@ -343,9 +359,8 @@ def hydrodynamic_contribution(spectrum,
         - q_max:                 Cutoff wavevector for propagons.
         - omega_max:             Cutoff frequecncy for propagons. If it is a dictionary,
                                  the keys must be 'L' for longitudinal and 'T' for transverse modes.
-        - is_interpolate:        If True, the bandwiths are interpolated with a spline function. 
-                                 If False, the bandwiths are assumed to be quadratic in omega and are
-                                 fitted accordingly.
+        - is_interpolate:       option for the interpolation of the hydrodynamic linewidths. Default option is 'spline'.
+                                    Other options are 'square', '2&4', '2&4bis'. Careful tests are needed to check the validity of the results.
                                 
         
     
