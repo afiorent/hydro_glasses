@@ -1,0 +1,29 @@
+# Amorphous Silica
+
+# Setup
+units               metal
+atom_style          atomic
+atom_modify         map hash
+read_data           initial.data
+
+mass                1 15.99
+mass                2 28.06
+
+pair_style          tersoff 
+pair_coeff          * *  /leonardo_scratch/large/userexternal/afiorent/glass/2_aSiO2/potentials/2007_SiO.tersoff O Si
+
+# Minimize structure
+thermo              100
+fix                 RELAX all box/relax iso 0.0 vmax 0.001
+min_style           cg
+minimize            0.0 1.0e-10 1000000 1000000
+unfix               RELAX
+min_style           fire 684321
+minimize            0.0 1.0e-10 1000000 1000000
+min_style           cg
+minimize            0.0 1.0e-10 1000000 1000000
+write_data          config.data nocoeff nofix
+
+# Compute the dynamical matrix
+neighbor            0.001 bin
+dynamical_matrix    all eskm 1e-06 file Dyn.form fold yes
