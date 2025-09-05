@@ -27,9 +27,9 @@ A python script (lammps_dynmat2sparse.py) is provided to generate the sparse mat
 
 2. VDSF Through Direct Diagonalization: Run the following scripts to compute the VDSF:
 
-$ python3 diagonalize.py
-$ python3 direct_DSF.py
+$ python3 0a_diagonalize.py
+$ python3 0b_direct_DSF.py
 
 3. VDSF Through Haydock-Lanczos Algorithm: This step is independent of the direct diagonalization step. Run the following script:
 
-$ python3 haydock_DSF.py
+$ python3 1_haydock_DSF.py
