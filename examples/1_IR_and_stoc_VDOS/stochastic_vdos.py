@@ -12,7 +12,7 @@ import logging
 import os
 from scipy import sparse
 #multiprocessing
-from multiprocessing import Pool
+from multiprocess import Pool
 
 
 # In[2]:
