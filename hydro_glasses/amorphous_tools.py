@@ -38,7 +38,7 @@ def compute_phi_Q(Q_list, reciprocal_cell, pos,fix_eperp=None,cell_sym=False):
         eperp=np.array([np.cross(Q_,eT) if np.linalg.norm(np.cross(Q_,eT))>1e-6 else np.cross(Q_,eT_2) for Q_ in Q_list ])
         
     eperp = oe.contract('qa,q->qa', eperp, 1/np.linalg.norm(eperp, axis = 1))
-    print(Q.shape,pos.shape)
+    print('Q and pos shape',Q.shape,pos.shape)
 
     exp_i_Q_dot_R = np.exp(1j*np.transpose(Q@pos, axes = (0, 2,1)))
     
