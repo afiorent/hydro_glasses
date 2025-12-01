@@ -168,7 +168,8 @@ for i in range(3):
 
 np.save(root+'IR_k{}_eta{}.npy'.format(k,eta),spectrum)
 
-
+thz2cm1=33.35641
+# Plotting IR spectrum
 fig,ax=plt.subplots()
 spectrum=np.load(root+'IR_k{}_eta{}.npy'.format(k,eta),allow_pickle=True).item()
 for i,pol in enumerate(['x','y','z']):
@@ -176,9 +177,10 @@ for i,pol in enumerate(['x','y','z']):
     y=spectrum[i]['S']
     norm=np.trapz(y, w)
     y/=norm
-    ax.plot(w/2/np.pi,y*2*np.pi,label='IR pol. {}'.format(pol))
-ax.set_xlabel('Frequency (THz)')
+    ax.plot(w*thz2cm1/2/np.pi,y*2*np.pi/thz2cm1,label='IR pol. {}'.format(pol))
+ax.set_xlabel('Frequency (cm$^{-1}$)')
 ax.set_ylabel('IR (a.u.)')
+ax.legend()
 plt.title('IR Spectrum via Haydock')
 plt.show()
 
