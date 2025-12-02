@@ -1,6 +1,6 @@
 ## Example 0: Vibrational Dynamical Structure Factor for Amorphous Silicon
 
-This example demonstrates how to calculate the Vibrational Dynamical Structure Factor (VDSF) for amorphous Silicon. The calculation starts from the dynamical matrix (stored as a sparse matrix) and the atomic configuration.
+This example mainly demonstrates how to calculate the Vibrational Dynamical Structure Factor (VDSF) for amorphous Silicon. The calculation starts from the dynamical matrix (stored as a sparse matrix) and the atomic configuration.
 
 ### Calculation Methods
 
@@ -33,3 +33,7 @@ $ python3 0b_direct_DSF.py
 3. VDSF Through Haydock-Lanczos Algorithm: This step is independent of the direct diagonalization step. Run the following script:
 
 $ python3 1_haydock_DSF.py
+
+4. Compute the VDOS usint the Haydock method combined with stochastic trace. This step is independent of the direct diagonalization step. Run the following script:
+
+$ python3 2_VDOS.py
