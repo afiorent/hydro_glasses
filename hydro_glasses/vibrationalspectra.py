@@ -200,7 +200,7 @@ class VibrationalSpectra:
 
         return spectrum
 
-    def compute_vdfs(self,
+    def compute_vdsf(self,
                      Q_list: Optional[np.ndarray] = None,
                      isotropic_minimal: bool = True,
                      nq: Optional[int] = None,
@@ -209,7 +209,7 @@ class VibrationalSpectra:
                      ncpus: Optional[int] = None,
                      save: bool = True):
         """
-        Compute VDFS (S(Q, omega)) and return a `spectrum` dict.
+        Compute VDSF (S(Q, omega)) and return a `spectrum` dict.
 
         - If `Q_list` is provided it will be used (expects shape (M,3)).
         - If `Q_list` is None and `isotropic_minimal` is True, `nq` must be provided and
@@ -286,7 +286,7 @@ class VibrationalSpectra:
             root = self.vs.root
             hl_steps = getattr(self.options, "hl_steps", None)
             eta = getattr(self.options, "eta", None)
-            fname = os.path.join(root, f'vdfs_hlsteps{hl_steps}_eta{eta}.npy')
+            fname = os.path.join(root, f'vdsf_hlsteps{hl_steps}_eta{eta}.npy')
             np.save(fname, spectrum)
 
         return spectrum
