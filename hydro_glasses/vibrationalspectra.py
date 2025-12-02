@@ -272,7 +272,68 @@ class VibrationalSpectra:
             root = self.vs.root
             hl_steps = getattr(self.options, "hl_steps", None)
             eta = getattr(self.options, "eta", None)
-            fname = os.path.join(root, f'vdfs_hlsteps{hl_steps}_eta{eta}_isomin{int(bool(isotropic_minimal))}.npy')
+            fname = os.path.join(root, f'vdfs_hlsteps{hl_steps}_eta{eta}.npy')
+            np.save(fname, spectrum)
+
+        return spectrum
+
+    def compute_IR_spectrum(self,
+                            polarizations=('x', 'y'),
+                            charges=None,
+                            charges_dict=None,
+                            normalize: bool = True,
+                            parallel: bool = True,
+                            ncpus: Optional[int] = None,
+                            save: bool = True):
+        """
+        Compute IR spectra for the system.
+
+        - `polarizations`: passed to `at.make_IR_vector`.
+        - `charges` / `charges_dict`: passed to `at.make_IR_vector`.
+        - Returns a `spectrum` dict with keys:
+            'omega' -> omega array
+            i -> {'S', 'alpha', 'beta'} for each IR vector
+        """
+        # ensure dynmat/atoms available
+        if self.vs.dynmat is None:
+            if getattr(self.vs, "root", None):
+                self.vs.initialize_from_root()
+            else:
+                raise RuntimeError("VibrationalSystem has no `dynmat` loaded")
+
+        # ensure make_IR_vector exists
+        if not hasattr(at, "make_IR_vector"):
+            raise ImportError("`amorphous_tools` has no `make_IR_vector`; provide it or import from examples")
+
+        # build IR vectors (shape: n_vectors x 3N)
+        phi = at.make_IR_vector(atoms=self.vs.atoms,
+                                polarizations=polarizations,
+                                charges=charges,
+                                charges_dict=charges_dict)
+        phi = np.asarray(phi)
+        if phi.ndim == 1:
+            phi = phi[None, :]
+
+        # prepare ket list and compute spectra
+        ket_list = [phi[i] for i in range(phi.shape[0])]
+
+        results = self.spectrum_for_ket_list(ket_list, parallel=parallel, ncpus=ncpus, normalize=normalize)
+        results = np.array(results, dtype='object')
+
+        # assemble output dict
+        spectrum = {}
+        spectrum['omega'] = self.options.omega_array
+
+        for i in range(len(results)):
+            S, alpha, beta = results[i]
+            spectrum[i] = {'S': S, 'alpha': alpha, 'beta': beta}
+
+        # optional save
+        if save and getattr(self.vs, "root", None):
+            root = self.vs.root
+            hl_steps = getattr(self.options, "hl_steps", None)
+            eta = getattr(self.options, "eta", None)
+            fname = os.path.join(root, f'IR_hlsteps{hl_steps}_eta{eta}.npy')
             np.save(fname, spectrum)
 
         return spectrum
