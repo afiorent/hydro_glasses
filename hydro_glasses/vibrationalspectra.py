@@ -158,15 +158,29 @@ class VibrationalSpectra:
         return results
 
     def compute_stochastic_vdos(self, nstoc=10, normalize: bool = True, parallel: bool = True,
-                               ncpus: Optional[int] = None, save=True):
+                               ncpus: Optional[int] = None, save=True,element=None):
         """
         Compute stochastic VDOS using random kets.
         Returns a list of results for each stochastic sample.
         """
         natoms = self.vs.atoms.get_global_number_of_atoms()
         dim = 3 * natoms
+        # build random kets using Generator
+        ket_list = []
+        rng = np.random.default_rng()
+        for _ in range(nstoc):
+            ket_list.append(rng.standard_normal(dim))
 
-        ket_list = [np.random.randn(dim) for _ in range(nstoc)]
+        #### Experimental feature: element-projected VDOS
+        if element is not None:
+            print("extracting VDOS for element: %s (experimental feature)", element,flush=True)
+            element_list = np.array(self.vs.atoms.get_chemical_symbols())
+            mask = (element_list == element)
+            if not mask.any():
+                raise ValueError(f"element `{element}` not found in system")
+            mask3 = np.repeat(mask, 3).astype(float)  # repeat for x,y,z and ensure numeric type
+            ket_list = [k * mask3 for k in ket_list]
+
 
         results = self.spectrum_for_ket_list(ket_list, parallel=parallel, ncpus=ncpus,
                                              normalize=normalize)
