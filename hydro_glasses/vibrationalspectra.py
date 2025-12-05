@@ -61,6 +61,10 @@ class LanczosOptions:
 
 # module-level global and worker (must be module-level for multiprocessing)
 _GLOBAL_DYNMAT = None
+def _init_worker(dynmat):
+    """Initializer for worker processes: set module-level dynmat."""
+    global _GLOBAL_DYNMAT
+    _GLOBAL_DYNMAT = dynmat
 
 def _lanczos_worker(args):
     """
@@ -147,13 +151,14 @@ class VibrationalSpectra:
 
         try:
             if parallel and ncpus > 1:
-                with Pool(ncpus) as p:
+                # pass dynmat to each worker via initializer so spawn/forkserver works
+                with Pool(ncpus, initializer=_init_worker, initargs=(self.vs.dynmat,)) as p:
                     results = p.map(_lanczos_worker, inputs)
             else:
                 results = [_lanczos_worker(inp) for inp in inputs]
         finally:
-            # clear global to avoid accidental reuse
             _GLOBAL_DYNMAT = None
+
 
         return results
 
