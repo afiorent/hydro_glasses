@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=68", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vibroglass"
+version = "0.1.0"
+description = "Lattice dynamics and hydrodynamic properties of glasses"
+readme = "README.md"
+license = "BSD-3-Clause"
+requires-python = ">=3.10"
+authors = [
+    { name = "Alfredo Fiorentino" },
+    { name = "Paolo Pegolo" },
+    { name = "Enrico Drigo" },
+]
+dependencies = [
+    "numpy",
+    "scipy",
+    "opt_einsum",
+    "ase",
+    "pandas",
+]
+
+[project.optional-dependencies]
+parallel = ["multiprocess"]
+plot = ["matplotlib"]
+kaldo = ["kaldo"]
+docs = [
+    "sphinx>=9",
+    "myst-parser>=5",
+    "myst-nb>=1",
+    "furo",
+    "sphinx-autodoc-typehints",
+]
+dev = [
+    "pytest",
+    "ruff",
+    "tox",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+src = ["src", "tests"]
+line-length = 99
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "SIM", # flake8-simplify
+    "RUF", # ruff-specific
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["vibroglass"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
