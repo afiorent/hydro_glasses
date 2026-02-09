@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./logo_hydro_glasses.png" alt="vibroglass Logo" width="250"/>
+  <img src="./docs/_static/logo_hydro_glasses.png" alt="vibroglass Logo" width="250"/>
 </p>
 
 # vibroglass
